@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Il Castello Incantato</title>
+
+    <!-- PWA Manifest & iOS setup -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4a2e1b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Il Castello">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=MedievalSharp&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #f5ebd6;
+            --paper-color: #fdf8eb;
+            --border-color: #8c6d46;
+            --dark-gold: #b8860b;
+            --text-color: #3a2518;
+            --accent-red: #8b0000;
+            --accent-green: #2e8b57;
+            --accent-purple: #4a154b;
+            --firefly-glow: #ffe600;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#dfcfb5 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: 'MedievalSharp', cursive, serif;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            max-height: 850px;
+            background: var(--paper-color);
+            border: 6px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 0 40px rgba(140, 109, 70, 0.2);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 500px) {
+            #app-container {
+                height: 92vh;
+                border-radius: 16px;
+            }
+        }
+
+        header {
+            background: linear-gradient(180deg, #4a2e1b 0%, #362011 100%);
+            color: #f3e5ab;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--dark-gold);
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+        }
+
+        .status-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .firefly-indicator {
+            position: relative;
+            display: inline-block;
+            filter: drop-shadow(0 0 5px var(--firefly-glow));
+        }
+
+        main {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .story-card {
+            background: #fffdf5;
+            border: 2px solid #d4c4a8;
+            border-radius: 8px;
+            padding: 14px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.03);
+            position: relative;
+        }
+
+        .room-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            color: var(--accent-red);
+            margin: 0 0 8px 0;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 4px;
+        }
+
+        .story-text {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        .firefly-dialogue {
+            background: #fffde6;
+            border: 2px solid #ffd700;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: fadeIn 0.4s ease;
+            box-shadow: 0 4px 10px rgba(255, 215, 0, 0.2);
+        }
+
+        .firefly-avatar {
+            font-size: 2rem;
+            line-height: 1;
+            animation: float 2s infinite ease-in-out;
+        }
+
+        .firefly-text {
+            font-size: 0.98rem;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            color: #5c4900;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .btn-option {
+            background: linear-gradient(180deg, #f7ebd4 0%, #e6d3b1 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.02rem;
+            color: var(--text-color);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 3px 0 var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-option:active {
+            transform: translateY(3px);
+            box-shadow: 0 0 0 var(--border-color);
+        }
+
+        .btn-firefly {
+            background: linear-gradient(180deg, #fff9c4 0%, #fff176 100%);
+            border-color: #fbc02d;
+            color: #4a3c00;
+            box-shadow: 0 3px 0 #c0ca33;
+            font-weight: bold;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .btn-firefly:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .inventory-bar {
+            background: #362011;
+            padding: 8px 12px;
+            border-top: 2px solid var(--dark-gold);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            min-height: 48px;
+        }
+
+        .inv-title {
+            color: #d4c4a8;
+            font-size: 0.85rem;
+            font-family: 'Cinzel', serif;
+            white-space: nowrap;
+        }
+
+        .inv-item {
+            background: #52341c;
+            border: 1px solid var(--dark-gold);
+            border-radius: 4px;
+            padding: 4px 8px;
+            color: #fff8dc;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .screen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--paper-color);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        .title-main {
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            color: var(--accent-red);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            margin-bottom: 2px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #6b4c33;
+            margin-bottom: 15px;
+        }
+
+        .diff-card {
+            width: 100%;
+            background: #f4e7d0;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: left;
+        }
+
+        .diff-card:hover, .diff-card:active {
+            background: #e6d4b5;
+        }
+
+        .diff-title {
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            font-size: 1rem;
+            color: var(--accent-red);
+        }
+
+        .diff-desc {
+            font-size: 0.85rem;
+            margin-top: 2px;
+            color: #4a3425;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <header id="game-header">
+        <div class="status-box">
+            <span class="stat-item" id="hp-display">❤️ 100 HP</span>
+        </div>
+        <div class="status-box">
+            <span class="stat-item" id="room-num-display">Stanza 1/20</span>
+            <span class="stat-item firefly-indicator" id="firefly-display">✨ ∞</span>
+        </div>
+    </header>
+
+    <main id="game-main">
+        <div class="story-card">
+            <h2 class="room-title" id="room-title">Nome Stanza</h2>
+            <p class="story-text" id="story-text">Testo descrittivo della stanza...</p>
+        </div>
+
+        <div id="firefly-box" class="firefly-dialogue hidden">
+            <span class="firefly-avatar">🧚✨</span>
+            <span class="firefly-text" id="firefly-text">Ciao! Sono Lumi la lucciola. Ti darò dei consigli durante la tua avventura!</span>
+        </div>
+
+        <div class="options-container" id="options-container"></div>
+    </main>
+
+    <div class="inventory-bar" id="inventory-bar">
+        <span class="inv-title">Borsa:</span>
+        <div id="inventory-items" style="display:flex; gap:6px;">
+            <span style="color:#a08a75; font-size:0.8rem; font-style:italic">Vuota</span>
+        </div>
+    </div>
+
+    <!-- Start / Difficulty Screen -->
+    <div id="start-screen" class="screen-overlay">
+        <h1 class="title-main">Il Castello Incantato</h1>
+        <p class="subtitle">La Corona Dorata & La Lucciola Magica</p>
+
+        <p style="font-size:0.9rem; margin-bottom:10px; font-weight:bold;">Scegli il tuo livello di sfida:</p>
+
+        <div class="diff-card" onclick="startGame('easy')">
+            <div class="diff-title">🌱 FACILE (5-6 Anni)</div>
+            <div class="diff-desc">Aiuti della Lucciola illimitati. Nessuna sconfitta. Per i più piccoli!</div>
+        </div>
+
+        <div class="diff-card" onclick="startGame('normal')">
+            <div class="diff-title">⚔️ NORMALE (7-8 Anni)</div>
+            <div class="diff-desc">5 Aiuti della Lucciola. Trappole moderate e checkpoint.</div>
+        </div>
+
+        <div class="diff-card" onclick="startGame('hard')">
+            <div class="diff-title">🔥 DIFFICILE (9-10 Anni)</div>
+            <div class="diff-desc">Solo 3 Aiuti totali! Danni raddoppiati e logica richiesta.</div>
+        </div>
+
+        <div class="diff-card" style="border-color: #4a154b; background: #efe4f0;" onclick="startGame('expert')">
+            <div class="diff-title" style="color: #4a154b;">👑 ADULTI / ESPERTO</div>
+            <div class="diff-desc"><strong>0 AIUTI!</strong> Danni letali (-50 HP). Gli errori sono puniti severamente. Nessun margine d'errore!</div>
+        </div>
+
+        <button id="btn-resume" class="btn-option hidden" style="margin-top:10px; width:100%; text-align:center; justify-content:center; background:#d4af37;" onclick="resumeGame()">
+            ▶️ Continua Ultima Partita
+        </button>
+    </div>
+
+    <div id="end-screen" class="screen-overlay hidden">
+        <h1 class="title-main" id="end-title">VITTORIA!</h1>
+        <p class="story-text" id="end-text" style="text-align:center; margin: 15px 0;"></p>
+        <button class="btn-option" style="width:100%; text-align:center; justify-content:center; background:var(--accent-green); color:white;" onclick="restartGame()">
+            🔄 Rigioca dall'Inizio
+        </button>
+    </div>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+            console.log('SW registrato:', reg.scope);
+        }).catch(err => console.log('Errore SW:', err));
+    });
+}
+
+let state = {
+    difficulty: 'normal',
+    currentRoom: 1,
+    hp: 100,
+    maxHp: 100,
+    fireflies: 5,
+    inventory: [],
+    flags: {}
+};
+
+const rooms = {
+    1: {
+        title: "1. Il Portone del Castello",
+        text: "Ti trovi davanti all'immenso portone del Castello Incantato. Sulla porta c'è un gargoyle di pietra che si anima e dice: 'Risolvi il mio indovinello se vuoi entrare! Ho le chiavi ma non ho serrature, ho lo spazio ma non ho stanze, puoi entrare ma non puoi uscire. Cosa sono?'",
+        hint: "Pensa all'oggetto che usi sul computer per scrivere le parole!",
+        options: [
+            { text: "La Tastiera", nextRoom: 2, action: () => showMessage("Il gargoyle sorride e apre il portone!") },
+            { text: "Un Baule Magico", nextRoom: 1, damage: 15, msg: "Sbagliato! Il gargoyle ruggisce soffiando scintille." },
+            { text: "Un Labirinto", nextRoom: 1, damage: 10, msg: "Errato! Un piccolo fulmine ti colpisce." }
+        ]
+    },
+    2: {
+        title: "2. L'Atrio Principale",
+        text: "Entri in un imponente atrio illuminato da candele galleggianti. A terra noti una vecchia TORCIA SPENTA e una boccetta di OLIO PER LAMPADE.",
+        hint: "Raccogliere l'olio e la torcia ti tornerà utile quando esplorerai i posti bui!",
+        options: [
+            { text: "Prendi la Torcia e l'Olio", nextRoom: 3, action: () => { addItem("Torcia"); addItem("Olio"); } },
+            { text: "Prosegui dritto verso le Cucine", nextRoom: 3 }
+        ]
+    },
+    3: {
+        title: "3. Le Cucine Reali",
+        text: "Un aroma delizioso riempie la stanza. Su un grande tavolo c'è una MELA MAGICA lucida e fumante. Il tuo stomaco brontola.",
+        hint: "La mela ha un aspetto curativo eccellente!",
+        options: [
+            { text: "Mangia subito la Mela (+30 HP)", nextRoom: 4, action: () => { heal(30); } },
+            { text: "Metti la Mela nella Borsa", nextRoom: 4, action: () => { addItem("Mela Magica"); } }
+        ]
+    },
+    4: {
+        title: "4. Il Giardino d'Inverno",
+        text: "Entri in una serra piena di fiori luminosi. Trapassata in una ragnatela noti una piccola Lucciola sbrilluccicosa che chiede aiuto!",
+        hint: "Aiutando la piccola creatura guadagnerai la sua amicizia ed esperti suggerimenti!",
+        options: [
+            { text: "Salva la Lucciola!", nextRoom: 5, action: () => { 
+                state.flags.hasFireflyFriend = true;
+                showMessage("La Lucciola ti ringrazia: 'Mi chiamo Lumi! Ti accompagnerò nel tuo viaggio!'");
+            }}
+        ]
+    },
+    5: {
+        title: "5. L'Armeria Antica",
+        text: "Pareti piene di armature rustiche. Su un supporto c'è uno SCUDO DI LEGNO e un AMULETO DI BRONZO.",
+        hint: "Lo scudo ti proteggerà dai pericoli fisici nei sotterranei!",
+        options: [
+            { text: "Equipaggia lo Scudo di Legno", nextRoom: 6, action: () => addItem("Scudo") },
+            { text: "Prendi l'Amuleto di Bronzo", nextRoom: 6, action: () => addItem("Amuleto") }
+        ]
+    },
+    6: {
+        title: "6. La Scalinata Oscura dei Sotterranei",
+        text: "Una scala di pietra scende nel buio pesto. Senza una luce rischi di scivolare e farti male!",
+        hint: "Usa la Torcia e l'Olio raccolti prima per fare luce!",
+        options: [
+            { text: "Accendi la Torcia con l'Olio", nextRoom: 7, req: () => hasItem("Torcia"), action: () => showMessage("Ora la scala è illuminata a giorno!") },
+            { text: "Scendi al buio tentando la fortuna", nextRoom: 7, damage: 25, msg: "Scivoli sui gradini umidi!" }
+        ]
+    },
+    7: {
+        title: "7. Le Prigioni Antiche",
+        text: "Nelle celle scure scorgi un vecchio saggio imprigionato. Ti chiede: 'Cerchi la Corona? Ricorda questa rima: IL ROSSO APRE, IL BLU CHIUDE, IL VERDE SALVA!'",
+        hint: "Memorizza i colori detti dal saggio: Rosso, Blu e Verde!",
+        options: [
+            { text: "Ringrazia il saggio e prosegui", nextRoom: 8, action: () => state.flags.knowsColors = true }
+        ]
+    },
+    8: {
+        title: "8. La Stanza dei Meccanismi",
+        text: "Un grande macchinario sbarra il passaggio con tre leve colorate: ROSSA, BLU e VERDE. Una placca dice: 'Aziona la leva che APRE il passaggio!'",
+        hint: "Cosa ha detto il saggio nella cella? Quale colore APRE?",
+        options: [
+            { text: "Tira la Leva ROSSA", nextRoom: 9, action: () => showMessage("CLACK! La grata si solleva perfettamente!") },
+            { text: "Tira la Leva BLU", nextRoom: 8, damage: 20, msg: "BZZZT! Una scossa elettrica!" },
+            { text: "Tira la Leva VERDE", nextRoom: 8, damage: 15, msg: "Una botola si apre sotto i piedi!" }
+        ]
+    },
+    9: {
+        title: "9. La Grotta dell'Eco",
+        text: "Una caverna naturale dove la tua voce rimbomba. Una voce misteriosa ti chiede: 'Più mi togli, più divento grande. Cosa sono?'",
+        hint: "Pensa a cosa fai sul terreno quando scavi nella sabbia!",
+        options: [
+            { text: "Un Buco", nextRoom: 10, action: () => showMessage("L'eco risponde: 'Esattooo...' ed apre il passaggio!") },
+            { text: "Un Monte", nextRoom: 9, damage: 15, msg: "L'eco sghignazza facendo cadere un sasso!" },
+            { text: "Un Albero", nextRoom: 9, damage: 10, msg: "Risposta errata!" }
+        ]
+    },
+    10: {
+        title: "10. La Stanza del Tesoro Minore",
+        text: "Al centro della stanza c'è un altare con una magnifica CHIAVE DI BRONZO sbrilluccicante!",
+        hint: "Prendi la chiave, servirà per accedere ai piani superiori del Castello!",
+        options: [
+            { text: "Prendi la CHIAVE DI BRONZO e sali le scale", nextRoom: 11, action: () => addItem("Chiave di Bronzo") }
+        ]
+    },
+    11: {
+        title: "11. La Grande Biblioteca",
+        text: "Migliaia di libri antichi. Un tomo aperto sulla scrivania recita: 'Il Drago si addormenta profondamente solo se sente la melodia del Flauto d'Argento o con il profumo delle Mele d'Oro.'",
+        hint: "Questo indizio ti rivela come sconfiggere o addormentare il Drago finale!",
+        options: [
+            { text: "Annota l'indizio nel diario e prosegui", nextRoom: 12, action: () => state.flags.knowsDragonWeakness = true }
+        ]
+    },
+    12: {
+        title: "12. Il Laboratorio dell'Alchimista",
+        text: "Alambicchi e provette colorate. Su un bancone puoi distillare una Pozione Curativa se unisci Erbe o usi una Mela Magica.",
+        hint: "Se hai la Mela Magica puoi trasformarla in una Pozione Super!",
+        options: [
+            { text: "Prepara la Pozione con la Mela Magica", nextRoom: 13, req: () => hasItem("Mela Magica"), action: () => { removeItem("Mela Magica"); addItem("Pozione Super"); } },
+            { text: "Prosegui senza distillare nulla", nextRoom: 13 }
+        ]
+    },
+    13: {
+        title: "13. La Galleria dei Quadri Parlanti",
+        text: "I ritratti degli antichi re ti osservano. Uno di loro sussurra: 'Attento alla porta degli specchi: solo il riflesso SENZA corona mostra la vera via!'",
+        hint: "Ascolta il consiglio del ritratto per la prossima stanza!",
+        options: [
+            { text: "Ringrazia il ritratto ed entra nella sala degli specchi", nextRoom: 14 }
+        ]
+    },
+    14: {
+        title: "14. La Sala degli Specchi Magici",
+        text: "Vedi tre specchi magici che mostrano tre porte strambe: Specchio A (Porta con corona d'oro), Specchio B (Porta normale senza corona), Specchio C (Porta di fuoco).",
+        hint: "Il quadro parlante ha detto: scegli il riflesso SENZA corona!",
+        options: [
+            { text: "Attraversa lo Specchio B (senza corona)", nextRoom: 15, action: () => showMessage("Passi attraverso lo specchio come se fosse acqua!") },
+            { text: "Attraversa lo Specchio A", nextRoom: 14, damage: 20, msg: "Rimbalzi sul vetro duro!" }
+        ]
+    },
+    15: {
+        title: "15. L'Osservatorio Astronomico",
+        text: "Un grande telescopio punta verso le stelle. Su un piedistallo giace la CHIAVE D'ARGENTO per la Torre Reale!",
+        hint: "Raccogli la seconda chiave indispensabile!",
+        options: [
+            { text: "Prendi la CHIAVE D'ARGENTO", nextRoom: 16, action: () => addItem("Chiave d'Argento") }
+        ]
+    },
+    16: {
+        title: "16. Il Ponte Sospeso della Torre",
+        text: "Un vertiginoso ponte di corda collega l'osservatorio alla Torre. Il vento soffia fortissimo!",
+        hint: "Se hai uno Scudo puoi usarlo per ripararti dal vento forte!",
+        options: [
+            { text: "Usa lo Scudo per fendere il vento", nextRoom: 17, req: () => hasItem("Scudo"), action: () => showMessage("Cammini saldo e sicuro!") },
+            { text: "Attraversi correndo al centro", nextRoom: 17, damage: 20, msg: "Il vento ti sbilancia e sbatti contro le assi!" }
+        ]
+    },
+    17: {
+        title: "17. Le Stanze Reali",
+        text: "Lussuosi drappeggi e letti a baldacchino. Su un manichino noti un MANTELLO SILENZIOSO.",
+        hint: "Il mantello ti permetterà di muoverti senza fare rumore vicino ai draghi!",
+        options: [
+            { text: "Indossa il Mantello Silenzioso", nextRoom: 18, action: () => addItem("Mantello Silenzioso") },
+            { text: "Prosegui senza il mantello", nextRoom: 18 }
+        ]
+    },
+    18: {
+        title: "18. Il Nido dei Cuccioli di Drago",
+        text: "Piccoli draghetti rossi dormono appollaiati sui muri. Se fanno rumore sveglieranno il Grande Drago!",
+        hint: "Se indossi il Mantello Silenzioso passerai inosservato!",
+        options: [
+            { text: "Cammina in silenzio col Mantello", nextRoom: 19, req: () => hasItem("Mantello Silenzioso"), action: () => showMessage("I cuccioli continuano a dormire tranquilli!") },
+            { text: "Punta i piedi e passa velocemente", nextRoom: 19, damage: 30, msg: "Un cucciolo starnutisce una fiammata!" }
+        ]
+    },
+    19: {
+        title: "19. Il Portale Finale della Torre",
+        text: "Davanti a te c'è l'enorme serratura della Tana del Drago. Servono la CHIAVE DI BRONZO e la CHIAVE D'ARGENTO!",
+        hint: "Inserisci entrambe le chiavi trovate nelle stanze 10 e 15!",
+        options: [
+            { text: "Inserisci la Chiave di Bronzo e d'Argento", nextRoom: 20, req: () => hasItem("Chiave di Bronzo") && hasItem("Chiave d'Argento"), action: () => showMessage("SDANG! Il grande portale di ferro si sblocca!") },
+            { text: "Provi a spingere il portone", nextRoom: 19, damage: 10, msg: "Il portone è troppo pesante! Servono le due chiavi!" }
+        ]
+    },
+    20: {
+        title: "20. La Tana del Drago ed la Corona Dorata",
+        text: "Sei nella grande sala del tesoro! Il gigantesco Drago Rosso dorme sopra la CORONA DORATA DEL REGNO.",
+        hint: "Ricordi cosa hai letto nella Biblioteca? Come si addormenta del tutto il drago?",
+        options: [
+            { text: "Usa la Pozione Super o il cibo per attrarlo in un sonno profondo", req: () => hasItem("Pozione Super"), action: () => showVictory("Hai usato la Pozione per addormentare il drago per sempre! Recuperi la Corona senza un graffio! SEI UN EROE!") },
+            { text: "Ti avvicini piano con il Mantello Silenzioso", req: () => hasItem("Mantello Silenzioso"), action: () => showVictory("Con il Mantello afferri la Corona dorata in perfetto silenzio e scappi trionfante! VITTORIA!") },
+            { text: "Prendi la corona di corsa a mani nude", action: () => {
+                if(state.hp > 50) {
+                    showVictory("Il drago si sveglia e ruggisce, ma sei ultra veloce! Afferri la Corona ed eviti le fiamme per un pelo! VITTORIA!");
+                } else {
+                    showGameOver("Sei troppo stanco e ferito per correre veloce! Il drago ti scaccia fuori dal castello. GAME OVER!");
+                }
+            }}
+        ]
+    }
+};
+
+function startGame(diff) {
+    state.difficulty = diff;
+    state.currentRoom = 1;
+    state.hp = 100;
+    state.inventory = [];
+    state.flags = {};
+
+    if (diff === 'easy') {
+        state.fireflies = 999;
+    } else if (diff === 'normal') {
+        state.fireflies = 5;
+    } else if (diff === 'hard') {
+        state.fireflies = 3;
+    } else if (diff === 'expert') {
+        state.fireflies = 0; // Adult Mode: NO hints allowed!
+    }
+
+    document.getElementById('start-screen').classList.add('hidden');
+    saveGame();
+    renderRoom();
+}
+
+function saveGame() {
+    localStorage.setItem('castello_pwa_save', JSON.stringify(state));
+    checkResumeButton();
+}
+
+function loadGame() {
+    const saved = localStorage.getItem('castello_pwa_save');
+    if (saved) {
+        state = JSON.parse(saved);
+        document.getElementById('start-screen').classList.add('hidden');
+        renderRoom();
+    }
+}
+
+function checkResumeButton() {
+    const saved = localStorage.getItem('castello_pwa_save');
+    const btn = document.getElementById('btn-resume');
+    if (saved) {
+        btn.classList.remove('hidden');
+    } else {
+        btn.classList.add('hidden');
+    }
+}
+
+function resumeGame() {
+    loadGame();
+}
+
+function renderRoom() {
+    const room = rooms[state.currentRoom];
+
+    document.getElementById('hp-display').textContent = `❤️ ${state.hp} HP`;
+    document.getElementById('room-num-display').textContent = `Stanza ${state.currentRoom}/20`;
+    document.getElementById('firefly-display').textContent = state.fireflies > 100 ? "✨ ∞" : `✨ ${state.fireflies}`;
+
+    document.getElementById('room-title').textContent = room.title;
+    document.getElementById('story-text').textContent = room.text;
+
+    const fBox = document.getElementById('firefly-box');
+    fBox.classList.add('hidden');
+
+    const optContainer = document.getElementById('options-container');
+    optContainer.innerHTML = '';
+
+    room.options.forEach((opt) => {
+        if (opt.req && !opt.req()) return;
+
+        const btn = document.createElement('button');
+        btn.className = 'btn-option';
+        btn.innerHTML = `<span>${opt.text}</span> <span>➔</span>`;
+        btn.onclick = () => handleChoice(opt);
+        optContainer.appendChild(btn);
+    });
+
+    // Hint Button (Disabled in Expert mode)
+    if (state.difficulty !== 'expert') {
+        const hintBtn = document.createElement('button');
+        hintBtn.className = 'btn-option btn-firefly';
+        hintBtn.innerHTML = `<span>🧚 Chiedi aiuto a Lumi (${state.fireflies > 100 ? "∞" : state.fireflies})</span>`;
+        if (state.fireflies <= 0) hintBtn.disabled = true;
+        hintBtn.onclick = () => showHint(room.hint);
+        optContainer.appendChild(hintBtn);
+    }
+
+    renderInventory();
+}
+
+function handleChoice(option) {
+    if (option.action) option.action();
+
+    if (option.damage) {
+        let dmgMult = 1;
+        if (state.difficulty === 'hard') dmgMult = 1.5;
+        if (state.difficulty === 'expert') dmgMult = 2.5; // Double/Triple damage for Adults!
+
+        const finalDamage = Math.round(option.damage * dmgMult);
+        state.hp -= finalDamage;
+        
+        if (option.msg) showMessage(`${option.msg} (-${finalDamage} HP)`);
+
+        if (state.hp <= 0) {
+            state.hp = 0;
+            showGameOver("Sei rimasto senza energia! Le trappole del castello ti hanno sopraffatto.");
+            return;
+        }
+    }
+
+    if (option.nextRoom) {
+        state.currentRoom = option.nextRoom;
+        saveGame();
+        renderRoom();
+    }
+}
+
+function showHint(hintText) {
+    if (state.fireflies > 0) {
+        if (state.difficulty !== 'easy') state.fireflies--;
+        document.getElementById('firefly-display').textContent = state.fireflies > 100 ? "✨ ∞" : `✨ ${state.fireflies}`;
+        const fBox = document.getElementById('firefly-box');
+        document.getElementById('firefly-text').textContent = hintText;
+        fBox.classList.remove('hidden');
+        saveGame();
+    }
+}
+
+function addItem(itemName) {
+    if (!state.inventory.includes(itemName)) {
+        state.inventory.push(itemName);
+        renderInventory();
+    }
+}
+
+function removeItem(itemName) {
+    state.inventory = state.inventory.filter(i => i !== itemName);
+    renderInventory();
+}
+
+function hasItem(itemName) {
+    return state.inventory.includes(itemName);
+}
+
+function heal(amount) {
+    state.hp = Math.min(state.maxHp, state.hp + amount);
+    document.getElementById('hp-display').textContent = `❤️ ${state.hp} HP`;
+}
+
+function renderInventory() {
+    const invDiv = document.getElementById('inventory-items');
+    if (state.inventory.length === 0) {
+        invDiv.innerHTML = '<span style="color:#a08a75; font-size:0.8rem; font-style:italic">Vuota</span>';
+    } else {
+        invDiv.innerHTML = state.inventory.map(item => `<span class="inv-item">📦 ${item}</span>`).join('');
+    }
+}
+
+function showMessage(msg) {
+    alert(msg);
+}
+
+function showVictory(text) {
+    document.getElementById('end-title').textContent = "👑 VITTORIA!";
+    document.getElementById('end-text').textContent = text;
+    document.getElementById('end-screen').classList.remove('hidden');
+    localStorage.removeItem('castello_pwa_save');
+}
+
+function showGameOver(text) {
+    document.getElementById('end-title').textContent = "💀 GAME OVER";
+    document.getElementById('end-text').textContent = text;
+    document.getElementById('end-screen').classList.remove('hidden');
+}
+
+function restartGame() {
+    document.getElementById('end-screen').classList.add('hidden');
+    document.getElementById('start-screen').classList.remove('hidden');
+    checkResumeButton();
+}
+
+checkResumeButton();
+</script>
+
+</body>
+</html>
